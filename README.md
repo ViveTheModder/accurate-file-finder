@@ -19,13 +19,14 @@ If put at the beginning, the program will accept any file name. Otherwise, it wi
 Case A: Work PC with 8 GB RAM
 * 40719 navigations total (Search All Files)
 * 37876 files found in 1 min 17.129 s
-* Speed: 491 f/s
+* Speed: 528 navigations / s
+
 Case B: Home PC with 4 GB RAM
 * 40721 navigations total (Search All Files)
 * 37878 files found in 8 min 17.499 s
-* Speed: 76 f/s
+* Speed: 82 navigations / s
+
 Case C: Friend PC with 16 GB RAM
 * 213997 navigations total (Search ADX Files)
 * 14015 files found in 2 min 31.772 s
-* Speed: 92 f/s
- Spee
+* Speed: 1409 navigations / s
