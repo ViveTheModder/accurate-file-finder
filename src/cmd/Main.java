@@ -1,16 +1,26 @@
 package cmd;
-//Accurate File Finder by ViveTheModder
+//Accurate File Finder v1.1 by ViveTheModder
+import java.awt.Desktop;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 public class Main 
 {
-	static int foundFileCnt, foundFileCntPrev, totalPathCnt;
+	static int foundFileCnt, foundFileCntPrev, option, totalPathCnt;
 	static File base;
+	static String deniedDirs="";
 	static String fileName;
 	static String results="";
+	static final long GB = 1073741824;
+	static final long MB = 1048576;
+	static final long TB = 1099511627776L;
 	static final String BAD_CHARS = "'<>,:/\\/|?*";
 	static final String HTML_TEXT = "<html><div style='font-family: Segoe UI;'>";
 	static final String HTML_TEXT_CENTER = "<html><div style='font-family: Segoe UI; text-align: center;'>";
@@ -30,11 +40,60 @@ public class Main
 		}
 		return false;
 	}
+	public static String getFileDateModified()
+	{
+		Date d = new Date(base.lastModified());
+		String format=null;
+		Locale loc = Locale.getDefault();
+		String locAsString = loc.toString();
+		if (locAsString.contains("US") || locAsString.contains("CA") || locAsString.contains("PH"))
+			format="MM/dd/yyyy h:mm:ss a";
+		else if (locAsString.contains("CN") || locAsString.contains("JP") || locAsString.contains("KR"))
+			format="yyyy/MM/dd HH:mm:ss";
+		else format="dd/MM/yyyy HH:mm;ss";
+		return new SimpleDateFormat(format).format(d);
+	}
+	public static String getFileSize()
+	{
+		long size = base.length();
+		double newSize=0;
+		String unit=" ";
+		if (size>=TB) 
+		{
+			newSize=(double)size/TB; unit+="TB";
+		}
+		else if (size>=GB) 
+		{
+			newSize=(double)size/GB; unit+="GB";
+		}
+		else if (size>=MB) 
+		{
+			newSize=(double)size/MB; unit+="MB";
+		}
+		else if (size>=1024)
+		{
+			newSize=(double)size/1024; unit+="KB";
+		}
+		else unit+="Bytes";
+		if (size>=1024) return String.format("%.3f", newSize)+unit;
+		else return size+unit;
+	}
+	public static void exportCSV() throws IOException
+	{
+		File csv = new File("results.csv");
+		FileWriter csvWriter = new FileWriter(csv);
+		String output = "file-name,folder-name,date-modified,file-type,file-size\n"; //CSV header
+		output+=results;
+		csvWriter.write(output);
+		csvWriter.close();
+		Desktop.getDesktop().open(csv);
+	}
 	public static void findFile()
 	{
+		String absPath = base.getAbsolutePath();
+		String currName = base.getName();
 		if (base.isFile()) //file check
 		{
-			String currName = base.getName();
 			String[] currNameArray = currName.split("\\.");
 			String currExt = "."+currNameArray[currNameArray.length-1];
 			String currNameWithNoExt = currName.replace(currExt, "");
@@ -57,8 +116,8 @@ public class Main
 			}
 			if (foundFileCntPrev!=foundFileCnt)
 			{
-				String absPath = base.getAbsolutePath();
-				results+=absPath+"\n";
+				if (option!=0) results+=absPath+"\n";
+				else results+=currName+","+absPath.replace(currName, "")+","+getFileDateModified()+","+currExt+","+getFileSize()+"\n";
 			}
 			totalPathCnt++;
 		}
@@ -73,16 +132,12 @@ public class Main
 					findFile();
 				}
 			}
-			else
-			{
-				JOptionPane.showMessageDialog(null, HTML_TEXT+"Access is denied.", WINDOW_TITLE, JOptionPane.ERROR_MESSAGE, null);
-				System.exit(1);	
-			}
+			else deniedDirs+=absPath+"\n";
 			totalPathCnt++;
 		}
-		Progress.label.setText(HTML_TEXT_CENTER+"Scanning...<br>"+base.getName()+HTML_TEXT_CENTER+"<br>Files found so far: "+foundFileCnt);
+		Progress.label.setText(HTML_TEXT_CENTER+"Scanning...<br>"+currName+HTML_TEXT_CENTER+"<br>Files found so far: "+foundFileCnt);
 	}
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
 		while(true)
 		{
@@ -106,6 +161,7 @@ public class Main
 				JOptionPane.showMessageDialog(null, HTML_TEXT+"Invalid file name!", WINDOW_TITLE, JOptionPane.ERROR_MESSAGE, null);
 			else break;
 		}
+		option = JOptionPane.showConfirmDialog(null, HTML_TEXT+"Do you want more detailed results in a CSV file?", WINDOW_TITLE, JOptionPane.YES_NO_OPTION);
 		Progress.setProgressReport();
 		long start = System.currentTimeMillis();
 		findFile();
@@ -118,10 +174,12 @@ public class Main
 		if (foundFileCnt>0) msg+="<br>Click OK to show results.";
 		
 		Progress.frame.setVisible(false);
-		JOptionPane.showMessageDialog(null, msg, WINDOW_TITLE, JOptionPane.INFORMATION_MESSAGE);
+		if (option==0) exportCSV();
+		else JOptionPane.showMessageDialog(null, msg, WINDOW_TITLE, JOptionPane.INFORMATION_MESSAGE);
 		if (foundFileCnt>0)
 		{
 			msg="Results:\n"+results;
+			if (deniedDirs.length()!=0) msg+="\nDenied Directories:\n"+deniedDirs;
 			//courtesy of ZeroDevs; this displays the results in a scrollable text area
 			JOptionPane.showMessageDialog(null,
 			new JScrollPane(new JTextArea(msg)

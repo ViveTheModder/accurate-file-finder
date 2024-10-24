@@ -15,6 +15,10 @@ Now, for the file name, you can use the asterisk character (*) at the beginning 
 
 If put at the beginning, the program will accept any file name. Otherwise, it will accept any file extension.
 
+After putting the required parameters, the tool will display the results in a message box, as well as a CSV file if the user chooses that option.
+
+The CSV in question consists of the file names, folder names, modified dates, file extensions, and file sizes of the files found.
+
 # Performance Results
 Case A: Work PC with 8 GB RAM
 * 40719 navigations total (Search All Files)
@@ -30,3 +34,11 @@ Case C: Friend PC with 16 GB RAM
 * 213997 navigations total (Search ADX Files)
 * 14015 files found in 2 min 31.772 s
 * Speed: 1409 navigations / s
+
+Case D: Virtual Machine with 2 GB RAM
+* 16467 navigations total (Search XLSX files)
+* 35 files found in 56.719 s
+* Speed: 191 navigations / s
+* 16467 navigations total (Search All Files)
+* 15290 files found in 11 min 43.142 s
+* Speed: 23 navigations / s
