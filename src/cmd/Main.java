@@ -1,11 +1,12 @@
 package cmd;
-//Accurate File Finder v1.1 by ViveTheModder
+//Accurate File Finder v1.2 by ViveTheModder
 import java.awt.Desktop;
+import java.awt.Font;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -22,8 +23,8 @@ public class Main
 	static final long MB = 1048576;
 	static final long TB = 1099511627776L;
 	static final String BAD_CHARS = "'<>,:/\\/|?*";
-	static final String HTML_TEXT = "<html><div style='font-family: Segoe UI;'>";
-	static final String HTML_TEXT_CENTER = "<html><div style='font-family: Segoe UI; text-align: center;'>";
+	static final String HTML_TEXT = "<html><div style='font-family: Tahoma, Geneva, sans-serif; font-size: 14px;'>";
+	static final String HTML_TEXT_CENTER = HTML_TEXT.replace("'>", "")+" text-align: center;'>";
 	static final String WINDOW_TITLE = "File Finder";
 	public static boolean isFileNameForbidden(String fileName)
 	{
@@ -135,7 +136,7 @@ public class Main
 			else deniedDirs+=absPath+"\n";
 			totalPathCnt++;
 		}
-		Progress.label.setText(HTML_TEXT_CENTER+"Scanning...<br>"+currName+HTML_TEXT_CENTER+"<br>Files found so far: "+foundFileCnt);
+		Progress.label.setText(HTML_TEXT_CENTER+currName+HTML_TEXT_CENTER+"<br>Files found so far: "+foundFileCnt);
 	}
 	public static void main(String[] args) throws IOException
 	{
@@ -145,7 +146,7 @@ public class Main
 			if (dir==null) System.exit(1);
 			if (dir.isEmpty()) 
 			{
-				base = new File("."); //current directory
+				base = new File(".").getCanonicalFile(); //current directory
 				break;
 			}
 			base = new File(dir);
@@ -180,16 +181,11 @@ public class Main
 		{
 			msg="Results:\n"+results;
 			if (deniedDirs.length()!=0) msg+="\nDenied Directories:\n"+deniedDirs;
-			//courtesy of ZeroDevs; this displays the results in a scrollable text area
-			JOptionPane.showMessageDialog(null,
-			new JScrollPane(new JTextArea(msg)
-			{
-				private static final long serialVersionUID = 1L;
-				{
-					setEditable(false);
-					setRows(10);
-				}
-			}), WINDOW_TITLE, JOptionPane.INFORMATION_MESSAGE);
+			JTextArea textarea = new JTextArea(msg);
+			textarea.setEditable(false);
+			textarea.setRows(10);
+			textarea.setFont(new Font("Courier New",Font.PLAIN,12));
+			JOptionPane.showMessageDialog(null, new JScrollPane(textarea), WINDOW_TITLE, JOptionPane.INFORMATION_MESSAGE);
 		}
 		System.exit(0);
 	}
